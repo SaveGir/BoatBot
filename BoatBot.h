@@ -132,13 +132,17 @@ class BoatBot
     BoatBot(int sdaPin, int sclPin);
     long PR_Pressure();
     long PR_Temperature();
+    int AC_xValue();
+    int AC_yValue();
+    int AC_zValue();
     
-
   private:
     int _sdaPin;
     int _sclPin;
     
-    long long PR_read();
+    /***********************************
+     * functions to manage I2C comunication
+     **********************************/
     void start();	//OK
     void stop();	//OK
     void ms_akn();	//OK
@@ -149,6 +153,12 @@ class BoatBot
     int singleWrite(unsigned char slaveWrite, unsigned char adress, unsigned char data);	//OK
     char singleRead(unsigned char slaveWrite, unsigned char slaveRead, unsigned char adress);	//OK
     //int multipleWrite(unsigned char slaveWrite, unsigned char adress, unsigned char data1, unsigned char data2);
+    
+    /**********************************
+     * Function to initialize an setup sensors
+     *********************************/
+    long long PR_read();
+    void AC_init();
 
 };
   

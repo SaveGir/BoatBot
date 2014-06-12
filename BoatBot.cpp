@@ -8,6 +8,8 @@ BoatBot::BoatBot(int sdaPin, int sclPin)
   _sdaPin = sdaPin;
   _sclPin = sclPin;
   pinMode(sclPin, OUTPUT);
+  //initialize the accelerometer
+  AC_init();
 }
 
 /***************************************************
@@ -24,10 +26,60 @@ long BoatBot::PR_Temperature()
   
 }
 
+//Reads the acceleration value measured on x-axis
+int BoatBot::AC_xValue()
+{
+  int x;
+  unsigned char data1, data2;
+  unsigned char adc_bit = 10;
+  
+  data1 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAX0);
+  data2 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAX1);
+  //VERIFICARE QUESTA PARTE!!!!!!-------------------------------------------------------------<<
+  // combine two bytes to get the 10-bit acceleration representation, see AN001  
+  x = (data1<<3)|(data2&7);                         
+  if (x & (1<<(adc_bit-1))) x -= (1<<adc_bit);  // 2's complement to negative 
+    
+  return x;
+}
+
+//Reads the acceleration value measured on x-axis
+int BoatBot::AC_yValue()
+{
+  int x;
+  unsigned char data1, data2;
+  unsigned char adc_bit = 10;
+  
+  data1 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAY0);
+  data2 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAY1);
+  //VERIFICARE QUESTA PARTE!!!!!!-------------------------------------------------------------<<
+  // combine two bytes to get the 10-bit acceleration representation, see AN001  
+  x = (data1<<3)|(data2&7);                         
+  if (x & (1<<(adc_bit-1))) x -= (1<<adc_bit);  // 2's complement to negative 
+    
+  return x;
+}
+
+//Reads the acceleration value measured on x-axis
+int BoatBot::AC_zValue()
+{
+  int x;
+  unsigned char data1, data2;
+  unsigned char adc_bit = 10;
+  
+  data1 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAZ0);
+  data2 = singleRead(ACCE_AD_W, ACCE_AD_R, AC_DATAZ1);
+  //VERIFICARE QUESTA PARTE!!!!!!-------------------------------------------------------------<<
+  // combine two bytes to get the 10-bit acceleration representation, see AN001  
+  x = (data1<<3)|(data2&7);                         
+  if (x & (1<<(adc_bit-1))) x -= (1<<adc_bit);  // 2's complement to negative 
+    
+  return x;
+}
 
 
 /***************************************************
-Private functions used to preprocess datas
+Private functions used to initialize and setup sensors
 ***************************************************/
 
 long long BoatBot::PR_read()
@@ -38,10 +90,25 @@ long long BoatBot::PR_read()
   char buffer;
   
   buffer = singleRead(0xEE, 0xEF, 0xAA);
-  
-  
-  
-  
+}
+
+void BoatBot::AC_init()
+{
+  /* Set the standby mode to allow configuring the measurement options
+   * disables autosleep and sleep mode too*/
+  singleWrite(ACCE_AD_W, AC_POWER_CTL, 0x00);
+  /*Disable the interrupts functions*/
+  singleWrite(ACCE_AD_W, AC_INT_ENABLE, 0x00);
+  /*Disable self test, set interrupts active High, 10 bit mode measurement
+   MSB mode and +-2g range*/
+  singleWrite(ACCE_AD_W, AC_DATA_FORMAT, 0x44);
+  /*Bypass FIFO registers functions*/
+  singleWrite(ACCE_AD_W, AC_FIFO_CTL, 0x00);
+  /*Sets the data rate to 100 HZ (power consumption of 140 uA) and disables
+   * low power mode*/
+  singleWrite(ACCE_AD_W, AC_BW_RATE, 0x0A);
+  /*Exit standby mode and start measuring*/
+  singleWrite(ACCE_AD_W, AC_POWER_CTL, 0x08);
 }
 
 /***************************************************
